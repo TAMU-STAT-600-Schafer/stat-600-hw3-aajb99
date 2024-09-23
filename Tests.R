@@ -88,6 +88,77 @@ LRMultiClass(X, y, Xt, yt, beta_init = beta_init_good)
 
 
 
+###############
+# p_k testing #
+###############
+X <- matrix(c(1, 1, 1, 1, 1, 2, 3, 2, 4, 3, 5, 4, 1, 1, 8, 4, 1, 1, 3, 8), nrow = 5, byrow = FALSE)
+beta_init <- matrix(c(2, 3, 2, 3, 5, 6, 7, 6), nrow = 4, ncol = 2, byrow = FALSE)
+beta_init2 <- matrix(c(1, 2, 4, 4, 1, 3, 4, 1, 1, 2, 7, 7), nrow = 4, ncol = 3, byrow = FALSE)
+beta_init3 <- matrix(rnorm(12, sd = 0.1), nrow = 4, ncol = 3)
+
+# p_k configuration (1):
+# Numerator
+Xb <- X %*% beta_init
+exp_Xb <- exp(Xb)
+
+# Denominator
+sum_exp_Xb <- rowSums(exp_Xb)
+
+# p_k estimate
+p_k <- exp_Xb / rowSums(exp_Xb)
+
+###
+
+# p_k configuration (test 2):
+Xb2 <- X %*% beta_init2
+exp_Xb2 <- exp(Xb2)
+
+# Denominator
+sum_exp_Xb2 <- rowSums(exp_Xb2)
+
+# p_k estimate (2)
+p_k2 <- exp_Xb2 / sum_exp_Xb2
+
+###
+
+# p_k configuration (test 3):
+Xb3 <- X %*% beta_init3
+exp_Xb3 <- exp(Xb3)
+
+# Denominator
+sum_exp_Xb3 <- rowSums(exp_Xb3)
+
+# p_k estimate (2)
+p_k3 <- exp_Xb3 / sum_exp_Xb3
+
+# Test LRMultiClass:
+# Results in p_k3 (add return statement after p_k computation in LRMultiClass)
+LRMultiClass(X, y = c(1, 2, 3, 3, 3), Xt = X, yt = c(1, 2, 3, 3, 3), beta_init = beta_init3)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

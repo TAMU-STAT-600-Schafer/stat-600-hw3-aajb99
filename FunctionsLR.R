@@ -101,6 +101,19 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ## Calculate corresponding pk, objective value f(beta_init), training error and testing error given the starting point beta_init
   ##########################################################################
   
+  # Compute pk: #
+  ###############
+  # Num
+  Xb <- X %*% beta_init
+  exp_Xb <- exp(Xb)
+  # Denom
+  sum_exp_Xb <- rowSums(exp_Xb)
+  # p_k:
+  p_k <- exp_Xb / rowSums(exp_Xb)
+  # To test:
+  # return(p_k)
+  
+  
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################
  
