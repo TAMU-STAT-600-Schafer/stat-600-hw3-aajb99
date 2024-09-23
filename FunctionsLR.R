@@ -108,10 +108,16 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   exp_Xb <- exp(Xb)
   # Denom
   sum_exp_Xb <- rowSums(exp_Xb)
-  # p_k:
+  # pk:
   p_k <- exp_Xb / rowSums(exp_Xb)
   # To test:
   # return(p_k)
+  
+  ###
+  
+  # Compute Objective Value f(beta_init) #
+  ########################################
+  
   
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations

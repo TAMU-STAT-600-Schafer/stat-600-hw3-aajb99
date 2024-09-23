@@ -136,6 +136,22 @@ p_k3 <- exp_Xb3 / sum_exp_Xb3
 LRMultiClass(X, y = c(1, 2, 3, 3, 3), Xt = X, yt = c(1, 2, 3, 3, 3), beta_init = beta_init3)
 
 
+##############################
+# Objective Function testing #
+##############################
+
+y_p_k3 = c(1, 3, 2, 2, 1)
+
+# log(p):
+log(p_k3)
+
+# Indicator function:
+# Ifunc <- 1 * ()
+
+# Full Objective Function:
+sum((-y) * (X %*% beta) + log(1 + exp(X %*% beta))) # Binary Logistic
+-(...log(p_k3)) + ((lambda / 2) * sum(colSums(beta_init3^2))) # Multinomial Logistic
+
 
 
 
