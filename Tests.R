@@ -16,3 +16,78 @@ X_bad <- matrix(c(1, 2, 3, 3, 1, 4), nrow = 3, byrow = TRUE)
 LRMultiClass(X = X_good, y = c(1,2,1), Xt = X_bad, yt = c(1,2,1))
 LRMultiClass(X = X_good, y = c(1,2,1), Xt = X_good, yt = c(1,2,1))
 
+
+# Check 2: check if X and y are dim compatible:
+
+X_good <- matrix(c(1, 2, 1, 3, 1, 4), nrow = 3, byrow = TRUE)
+y_good <- c(1, 2, 3)
+y_bad <- c(1,2,3,4,4)
+dim(X_good)[1] != length(y_good)
+dim(X_good)[1] != length(y_bad)
+
+# Check LRMultiClass:
+LRMultiClass(X_good, y_bad, Xt = X_good, yt = y_good)
+
+
+# Check 3: X and Xt are dim compatible:
+X <- matrix(c(1, 2, 1, 3, 1, 4), nrow = 3, byrow = TRUE)
+Xt_bad <- matrix(c(1, 2, 1, 3, 1, 4, 1, 5), nrow = 4, byrow = TRUE)
+
+# Check LRMultiClass:
+LRMultiClass(X, y_good, Xt = Xt_bad, yt = c(1, 2, 3, 4))
+
+if (dim(X)[1] != dim(Xt_bad)[1] | dim(X)[2] != dim(Xt_bad)[2]) {
+  
+  stop(paste("Test Works."))
+  
+}
+
+
+# Check 4: eta is positive:
+X <- matrix(c(1, 2, 1, 2, 1, 4), nrow = 3, byrow = TRUE)
+Xt <- matrix(c(1, 2, 1, 3, 1, 4), nrow = 3, byrow = TRUE)
+y <- c(1, 2, 3)
+yt <- c(1, 2, 4)
+
+# Check LRMultiClass:
+LRMultiClass(X, y, Xt, yt, eta = 1)
+
+# Check 5: lambda is non-negative:
+X <- matrix(c(1, 2, 1, 2, 1, 4), nrow = 3, byrow = TRUE)
+Xt <- matrix(c(1, 2, 1, 3, 1, 4), nrow = 3, byrow = TRUE)
+y <- c(1, 2, 3)
+yt <- c(1, 2, 4)
+
+# Check LRMultiClass:
+LRMultiClass(X, y, Xt, yt, lambda = -1)
+
+
+# Check 5: beta_init:
+X <- matrix(c(1, 2, 1, 2, 1, 4), nrow = 3, byrow = TRUE)
+Xt <- matrix(c(1, 2, 1, 3, 1, 4), nrow = 3, byrow = TRUE)
+y <- c(0, 1, 2)
+yt <- c(1, 2, 4)
+
+K <- length(unique(y))
+
+beta_init0 <- matrix(NaN, nrow = 2, ncol = 2)
+beta_init0 <- NULL
+all(is.null(beta_init0)) | all(is.na(beta_init0))
+
+beta_init <- matrix(0, nrow = dim(X)[2], ncol = K)
+beta_init
+beta_init_badp <- matrix(c(1, 2, 3, 4, 5, 6, 6, 7, 4), nrow = 3)
+beta_init_badk <- matrix(c(1, 2, 3, 4, 5, 6, 6, 7), nrow = 2)
+beta_init_good <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 2)
+
+# Check LRMultiClass:
+LRMultiClass(X, y, Xt, yt, beta_init = NULL)
+LRMultiClass(X, y, Xt, yt, beta_init = beta_init_badp)
+LRMultiClass(X, y, Xt, yt, beta_init = beta_init_badk)
+LRMultiClass(X, y, Xt, yt, beta_init = beta_init_good)
+
+
+
+
+
+
