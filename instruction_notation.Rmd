@@ -1,0 +1,47 @@
+---
+title: "Instructions"
+author: "Aaron Brown"
+date: "9/22/2024"
+output: pdf_document
+---
+
+### Multi-Class Logistic Regression
+
+For each class k (in 0, ..., K-1) we consider class probabilities for sample i conditioning on corresponding vector of covariates x_i
+
+$$ P(y_i = k|x_i) = p_k(x_i; \beta), \quad \sum_{k=0}^{K-1}p_k(x_i; \beta) = 1. $$
+
+We assume the following model holds for class probabilities
+
+$$ p_k(x_i; \beta) = \frac{e^{x_i^{\top}\beta_k}}{\sum_{l=0}^{K-1}e^{x_i^{\top}\beta_l}}. $$
+
+Ridge Regression implemented to handle over parameterization:
+
+$$ 
+f(\beta) = \left[-\sum_{i=1}^n\left(\sum_{k=0}^{K-1}1(y_i=k)\log p_{k}(x_i; \beta)\right) + \frac{\lambda}{2}\sum_{k=0}^{K-1}\sum_{j=1}^p\beta_{k,j}^2\right],
+\quad \mbox{where} \quad p_k(x_i; \beta)=\frac{e^{x_i^{\top}\beta_k}}{\sum_{l=0}^{K-1} e^{x_i^{\top}\beta_l}}
+$$
+
+Classification probability:
+
+$$
+p_k(x; \beta) = \frac{e^{x^{\top} \beta_k}}{\sum_{l=0}^{K-1} e^{x^{\top} \beta_l}}.
+$$
+
+Damped Newton's Method:
+
+Damped Newton's update with learning rate $\eta >0$:
+
+$$
+\beta_k^{(t+1)} = \beta_k^{(t)} - \eta (X^{\top} W_k X + \lambda I)^{-1} \left[ X^{\top} \left( P_k - 1(Y = k) \right) + \lambda \beta_k^{(t)} \right], \quad k = 0, \dots, K-1;
+$$
+
+
+
+
+
+
+
+
+
+
