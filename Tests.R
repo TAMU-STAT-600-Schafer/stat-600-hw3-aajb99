@@ -140,36 +140,23 @@ LRMultiClass(X, y = c(1, 2, 3, 3, 3), Xt = X, yt = c(1, 2, 3, 3, 3), beta_init =
 # Objective Function testing #
 ##############################
 
-y_p_k3 = c(1, 3, 2, 2, 1)
-
 # log(p):
 log(p_k3)
 
 # Indicator function:
-# Ifunc <- 1 * ()
+y_p_k3 = c(1, 3, 2, 2, 1)
+model.matrix(~ y_p_k3 - 1)
 
-# Full Objective Function:
-sum((-y) * (X %*% beta) + log(1 + exp(X %*% beta))) # Binary Logistic
--(...log(p_k3)) + ((lambda / 2) * sum(colSums(beta_init3^2))) # Multinomial Logistic
+# Full Objective Function: #
+y_p_k3_factor <- as.factor(y_p_k3)
+y_indicator <- model.matrix(~ y_p_k3_factor - 1)
 
+-(y_indicator %*% t(log(p_k3))) + ((lambda / 2) * sum(colSums(beta_init3^2))) # Multinomial Logistic
+# Method to sum above matrix (trace method)
+-sum(diag(y_indicator %*% t(log(p_k3))))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# objective function in full:
+-sum(diag(y_indicator %*% t(log(p_k3)))) + ((lambda / 2) * sum(colSums(beta_init3^2)))
 
 
 
