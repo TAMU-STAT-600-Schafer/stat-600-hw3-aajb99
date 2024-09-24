@@ -140,6 +140,9 @@ LRMultiClass(X, y = c(1, 2, 3, 3, 3), Xt = X, yt = c(1, 2, 3, 3, 3), beta_init =
 # Objective Function testing #
 ##############################
 
+# lambda:
+lambda1 = 2
+
 # log(p):
 log(p_k3)
 
@@ -156,8 +159,12 @@ y_indicator <- model.matrix(~ y_p_k3_factor - 1)
 -sum(diag(y_indicator %*% t(log(p_k3))))
 
 # objective function in full:
--sum(diag(y_indicator %*% t(log(p_k3)))) + ((lambda / 2) * sum(colSums(beta_init3^2)))
+-sum(diag(y_indicator %*% t(log(p_k3)))) + ((lambda1 / 2) * sum(colSums(beta_init3^2)))
 
+# Check LRMultiClass:
+# Results using p_k3 (add return statement after obj_val computation in LRMultiClass)
+# (Results match above full objective function)
+LRMultiClass(X, y = y_p_k3, Xt = X, yt = y_p_k3, beta_init = beta_init3, lambda = lambda1)
 
 
 

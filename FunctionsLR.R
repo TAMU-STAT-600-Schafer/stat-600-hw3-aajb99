@@ -118,6 +118,10 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   # Compute Objective Value f(beta_init) #
   ########################################
   
+  obj_val <- 
+    -sum(diag(y_indicator %*% t(log(p_k3)))) + # Negative Log Likelihood
+    ((lambda / 2) * sum(colSums(beta_init3^2))) # Ridge Penalty
+  # return(obj_val)
   
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
