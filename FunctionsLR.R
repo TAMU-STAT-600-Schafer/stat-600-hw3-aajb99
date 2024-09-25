@@ -178,7 +178,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
       # Hessian Update:
       h <- t(X * W) %*% X + (lambda * Identity)
       # Damped Newton's Update:
-      beta[, k] <- beta[, k] -eta1 * (solve(h) %*% g)
+      beta[, k] <- beta[, k] -eta * (solve(h) %*% g)
       
     }
     
