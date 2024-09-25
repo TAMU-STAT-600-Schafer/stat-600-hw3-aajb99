@@ -103,32 +103,130 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   
   # Compute pk: #
   ###############
+  
+  # For X:
   # Num
   Xb <- X %*% beta_init
   exp_Xb <- exp(Xb)
   # Denom
   sum_exp_Xb <- rowSums(exp_Xb)
   # pk:
-  p_k <- exp_Xb / rowSums(exp_Xb)
-  # To test:
-  # return(p_k)
+  p_k <- exp_Xb / sum_exp_Xb
+  
+  # For Xt:
+  # Num
+  Xtb <- Xt %*% beta_init
+  exp_Xtb <- exp(Xtb)
+  # Denom
+  sum_exp_Xtb <- rowSums(exp_Xtb)
+  # pk:
+  p_kt <- exp_Xtb / sum_exp_Xtb
+
   
   ###
   
   # Compute Objective Value f(beta_init) #
   ########################################
   
-  obj_val <- 
-    -sum(diag(y_indicator %*% t(log(p_k3)))) + # Negative Log Likelihood
-    ((lambda / 2) * sum(colSums(beta_init3^2))) # Ridge Penalty
+  y_factor <- as.factor(y)
+  y_indicator <- model.matrix(~ y_factor - 1)
+  
+  objective <- 
+    -sum(diag(y_indicator %*% t(log(p_k)))) + # Negative Log Likelihood
+    ((lambda / 2) * sum(colSums(beta_init^2))) # Ridge Penalty
   # return(obj_val)
+  
+  ###
+  
+  # Compute Training/Testing Errors #
+  ###################################
+  
+  # Train
+  y_preds <- apply(p_k, 1, which.max) - 1
+  # Compute percent
+  error_train <- (1 - mean(y_preds == y)) * 100
+  
+  # Test
+  yt_preds <- apply(p_kt, 1, which.max) - 1
+  # Compute percent
+  error_test <- (1 - mean(yt_preds == yt)) * 100
+  
+  # return(c(error_train, error_test))
+  
+  
+  ############## ############## ############## ############## ##############
   
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################
  
-  # Within one iteration: perform the update, calculate updated objective function and training/testing errors in %
+  # Initialize Terms:
+  X_tran <- t(X)
+  Identity <- diag(1, nrow = p)
+  beta <- beta_init
   
+  # Within one iteration: perform the update, calculate updated objective function and training/testing errors in %
+  for (i in 1:numIter){
+    
+    for (k in 1:K){
+      
+      # W term configuration (in Hessian):
+      W <- p_k[, k] * (1 - p_k[, k])
+      
+      # Generating Function Update:
+      g <- X_tran %*% (p_k[, k] - y_indicator[, k]) + (lambda * beta[, k])
+      # Hessian Update:
+      h <- t(X * W) %*% X + (lambda * Identity)
+      # Damped Newton's Update:
+      beta[, k] <- beta[, k] -eta1 * (solve(h) %*% g)
+      
+    }
+    
+    # Update p_k #
+    ##############
+    
+    # Train:
+    # Num
+    Xb <- X %*% beta
+    exp_Xb <- exp(Xb)
+    # Denom
+    sum_exp_Xb <- rowSums(exp_Xb)
+    # pk:
+    p_k <- exp_Xb / sum_exp_Xb
+    # Test:
+    #######
+    Xtb <- Xt %*% beta
+    exp_Xtb <- exp(Xtb)
+    # Denom
+    sum_exp_Xtb <- rowSums(exp_Xtb)
+    # pkt:
+    p_kt <- exp_Xtb / sum_exp_Xtb
+    
+    
+    # Compute Training/Testing Errors #
+    ###################################
+    
+    # Train
+    y_preds <- apply(p_k, 1, which.max) - 1
+    # Compute percent
+    error_train <- (1 - mean(y_preds == y)) * 100
+    
+    # Test
+    yt_preds <- apply(p_kt, 1, which.max) - 1
+    # Compute percent
+    error_test <- (1 - mean(yt_preds == yt)) * 100
+    
+    
+    # Compute Objective Value #
+    ###########################
+    objective <- 
+      -sum(diag(y_indicator %*% t(log(p_k)))) + # Negative Log Likelihood
+      ((lambda / 2) * sum(colSums(beta^2))) # Ridge Penalty
+    # print(objective)
+    
+  }
+  
+  # return(p_kt)
   
   ## Return output
   ##########################################################################

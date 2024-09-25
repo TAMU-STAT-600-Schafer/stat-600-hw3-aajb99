@@ -91,6 +91,7 @@ LRMultiClass(X, y, Xt, yt, beta_init = beta_init_good)
 ###############
 # p_k testing #
 ###############
+# X: also used in later testing
 X <- matrix(c(1, 1, 1, 1, 1, 2, 3, 2, 4, 3, 5, 4, 1, 1, 8, 4, 1, 1, 3, 8), nrow = 5, byrow = FALSE)
 beta_init <- matrix(c(2, 3, 2, 3, 5, 6, 7, 6), nrow = 4, ncol = 2, byrow = FALSE)
 beta_init2 <- matrix(c(1, 2, 4, 4, 1, 3, 4, 1, 1, 2, 7, 7), nrow = 4, ncol = 3, byrow = FALSE)
@@ -139,7 +140,6 @@ LRMultiClass(X, y = c(1, 2, 3, 3, 3), Xt = X, yt = c(1, 2, 3, 3, 3), beta_init =
 ##############################
 # Objective Function testing #
 ##############################
-
 # lambda:
 lambda1 = 2
 
@@ -165,6 +165,187 @@ y_indicator <- model.matrix(~ y_p_k3_factor - 1)
 # Results using p_k3 (add return statement after obj_val computation in LRMultiClass)
 # (Results match above full objective function)
 LRMultiClass(X, y = y_p_k3, Xt = X, yt = y_p_k3, beta_init = beta_init3, lambda = lambda1)
+
+
+###########################
+# Newton's Method Testing #
+###########################
+
+# Test solve() function:
+
+a <- matrix(c(1, 2, 3, 4), nrow = 2)
+a_inv <- solve(a) %*% a
+b <- matrix(c(1, 2), nrow = 2)
+a_inv %*% b
+solve(a, b)
+
+###
+
+eta1 <- 1
+
+# Test W term (Hessian calculation):
+W_test <- diag(p_k3 %*% t(1 - p_k3))
+p_k3[, 1] * (1 - p_k3[, 1])
+
+p_k3[1,] %*% (1 - p_k3)[1,]
+
+# W by row:
+W_test <- vector()
+for (j in 1:nrow(p_k3)){
+  row_prod <- p_k3[j,] %*% (1 - p_k3)[j,]
+  W_test <- append(W_test, row_prod)
+}
+W_test
+
+# W by col:
+W_test <- vector()
+for (j in 1:nrow(p_k3)){
+  row_prod <- p_k3[j,] %*% (1 - p_k3)[j,]
+  W_test <- append(W_test, row_prod)
+}
+W_test
+
+# Damped Newtons Update:
+Identity1 <- diag(1, nrow = ncol(X))
+beta_new_test <- beta_init3 - ((eta1 * solve(t(X * W_test) %*% X + (lambda1 * Identity1))) %*% 
+  (t(X) %*% (p_k3 - y_indicator) + (lambda1 * beta_init3)))
+
+# Check LRMultiClass:
+LRMultiClass(X, y = y_p_k3, Xt = X, yt = y_p_k3, beta_init = beta_init3, lambda = lambda1, eta = eta1)
+
+
+#### Newton's Method: looping through K clusters ####
+
+############################
+# Objects:
+X <- matrix(c(1, 1, 1, 1, 1, 2, 3, 2, 4, 3, 5, 4, 1, 1, 8, 4, 1, 1, 3, 8), nrow = 5, byrow = FALSE)
+beta_init3 <- matrix(rnorm(12, sd = 0.1), nrow = 4, ncol = 3)
+Xb3 <- X %*% beta_init3
+exp_Xb3 <- exp(Xb3)
+# Denominator
+sum_exp_Xb3 <- rowSums(exp_Xb3)
+# p_k estimate (2)
+p_k3 <- exp_Xb3 / sum_exp_Xb3
+y_p_k3 = c(1, 3, 2, 2, 1)
+y_p_k3_factor <- as.factor(y_p_k3)
+y_indicator <- model.matrix(~ y_p_k3_factor - 1)
+
+lambda1 = 2
+eta1 <- 1
+Identity1 <- diag(1, nrow = ncol(X))
+
+############################
+# Inner for loop (by class)
+
+for (k in 1:ncol(p_k3)){
+    
+  # W term configuration:
+  W_test <- p_k3[, k] * (1 - p_k3[, k])
+  
+  # Generating Function Update:
+  g <- t(X) %*% (p_k3[, k] - y_indicator[, k]) + (lambda1 * beta_init3[, k])
+  # Hessian Update:
+  h <- t(X * W_test) %*% X + (lambda1 * Identity1)
+  # Damped Newton's Update:
+  beta_init3[, k] <- beta_init3[, k] -eta1 * (solve(h) %*% g)
+    
+}
+
+Xb <- X %*% beta_init3
+exp_Xb <- exp(Xb)
+# Denom
+sum_exp_Xb <- rowSums(exp_Xb)
+# pk:
+p_k3_new <- exp_Xb / rowSums(exp_Xb)
+
+
+#######################################################
+# Check LRMultiClass with implemented Newton's Updater:
+p_k_test <- LRMultiClass(X, y = y_p_k3, Xt = X, yt = y_p_k3, beta_init = beta_init3, lambda = lambda1, eta = eta1)
+
+
+
+####################
+# Test/Train Error #
+####################
+Xt <- matrix(c(1, 1, 1, 1, 2, 3, 2, 4, 3, 5, 4, 1, 1, 8, 4, 1), nrow = 4, byrow = FALSE)
+yt <- matrix(c(1, 3, 2, 2)) - 1
+
+# Training/Testing Error:
+p_k_test
+
+y_preds <- apply(p_k_test, 1, which.max) - 1
+y_p_k3 <- y_p_k3 - 1
+
+# Compute percent
+mean(y_preds == y_p_k3)
+# Deviating vectors:
+y_preds[2] <- 0
+y_preds_dev <- y_preds
+(1 - mean(y_preds_dev == y_p_k3)) * 100
+
+#######################################################
+# Test first iteration errors:
+
+# Ensure y objects below are range 0 - K-1:
+yt <- as.vector(yt)
+y_p_k3
+# Check LRMultiClass with Errors implemented:
+LRMultiClass(X, y = y_p_k3, Xt = Xt, yt = yt, beta_init = beta_init3, lambda = lambda1, eta = eta1)
+# Check if matches the following computation:
+Xb <- X %*% beta_init3
+exp_Xb <- exp(Xb)
+# Denom
+sum_exp_Xb <- rowSums(exp_Xb)
+# pk:
+p_k3 <- exp_Xb / sum_exp_Xb
+
+# For Xt:
+# Num
+Xtb <- Xt %*% beta_init3
+exp_Xtb <- exp(Xtb)
+# Denom
+sum_exp_Xtb <- rowSums(exp_Xtb)
+# pk:
+p_kt <- exp_Xtb / sum_exp_Xtb
+# Errors:
+y_preds <- apply(p_k3, 1, which.max) - 1
+yt_preds <- apply(p_kt, 1, which.max) - 1
+# Compute percent
+mean(y_preds == y_p_k3) # MATCH
+mean(yt_preds == yt) # MATCH
+
+######################################
+# Test final iteration errors:
+# (after implementing errors in loops)
+LRMultiClass(X, y = y_p_k3, Xt = Xt, yt = yt, beta_init = beta_init3, lambda = lambda1, eta = eta1)
+
+
+#######################################################
+# Test Xt and yt (testing) objects in p_kt computation:
+
+# For Xt:
+# Num
+Xtb <- Xt %*% beta_init3
+exp_Xtb <- exp(Xtb)
+# Denom
+sum_exp_Xtb <- rowSums(exp_Xtb)
+# pk:
+p_kt <- exp_Xtb / sum_exp_Xtb
+
+# For X:
+# Num
+Xb <- X %*% beta_init3
+exp_Xb <- exp(Xb)
+# Denom
+sum_exp_Xb <- rowSums(exp_Xb)
+# pk:
+p_k <- exp_Xb / sum_exp_Xb
+
+
+
+
+
 
 
 
