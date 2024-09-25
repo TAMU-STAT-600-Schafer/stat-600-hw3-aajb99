@@ -345,6 +345,13 @@ p_k <- exp_Xb / sum_exp_Xb
 
 
 
+# Additional Testing #
+# Vector
+a <- vector()
+a <- append(a, 1)
+
+
+
 
 
 
