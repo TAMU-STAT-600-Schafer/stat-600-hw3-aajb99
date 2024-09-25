@@ -24,6 +24,10 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   K <- length(unique(y))
   p <- dim(X)[2]
   n <- length(y)
+  # Initialize vector objects (errors/objective):
+  error_train <- vector()
+  error_test <- vector()
+  objective <- vector()
   
   # Check that the first column of X and Xt are 1s, if not - display appropriate message and stop execution.
   if (!all(X[,1] == 1) | !all(Xt[,1] == 1)){
@@ -131,10 +135,11 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   y_factor <- as.factor(y)
   y_indicator <- model.matrix(~ y_factor - 1)
   
-  objective <- 
+  objective_obj <- 
     -sum(diag(y_indicator %*% t(log(p_k)))) + # Negative Log Likelihood
     ((lambda / 2) * sum(colSums(beta_init^2))) # Ridge Penalty
-  # return(obj_val)
+  
+  objective <- append(objective, objective_obj)
   
   ###
   
@@ -144,12 +149,16 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   # Train
   y_preds <- apply(p_k, 1, which.max) - 1
   # Compute percent
-  error_train <- (1 - mean(y_preds == y)) * 100
+  error_train_obj <- (1 - mean(y_preds == y)) * 100
+  
+  error_train <- append(error_train, error_train_obj)
   
   # Test
   yt_preds <- apply(p_kt, 1, which.max) - 1
   # Compute percent
-  error_test <- (1 - mean(yt_preds == yt)) * 100
+  error_test_obj <- (1 - mean(yt_preds == yt)) * 100
+  
+  error_test <- append(error_test, error_test_obj)
   
   # return(c(error_train, error_test))
   
@@ -209,19 +218,26 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
     # Train
     y_preds <- apply(p_k, 1, which.max) - 1
     # Compute percent
-    error_train <- (1 - mean(y_preds == y)) * 100
+    error_train_obj <- (1 - mean(y_preds == y)) * 100
+    
+    error_train <- append(error_train, error_train_obj)
     
     # Test
     yt_preds <- apply(p_kt, 1, which.max) - 1
     # Compute percent
-    error_test <- (1 - mean(yt_preds == yt)) * 100
+    error_test_obj <- (1 - mean(yt_preds == yt)) * 100
+    
+    error_test <- append(error_test, error_test_obj)
     
     
     # Compute Objective Value #
     ###########################
-    objective <- 
+    objective_obj <- 
       -sum(diag(y_indicator %*% t(log(p_k)))) + # Negative Log Likelihood
       ((lambda / 2) * sum(colSums(beta^2))) # Ridge Penalty
+    
+    objective <- append(objective, objective_obj)
+    
     # print(objective)
     
   }
