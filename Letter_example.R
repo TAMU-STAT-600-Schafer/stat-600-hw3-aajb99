@@ -56,7 +56,7 @@ check_runtime(num_times = 5L)
 
 # [ToDo] Report the median time of your code from microbenchmark above in the comments below
 
-# Median time:  (in sec)
+# Median time: 8.142604 seconds (Intel chip)
 
 
 

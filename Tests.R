@@ -161,6 +161,12 @@ y_indicator <- model.matrix(~ y_p_k3_factor - 1)
 # objective function in full:
 -sum(diag(y_indicator %*% t(log(p_k3)))) + ((lambda1 / 2) * sum(colSums(beta_init3^2)))
 
+# Simplify objective function for optimal runtime:
+log_p <- log(p_k3)
+neg_log_lik <- -sum(y_indicator * log_p)
+ridge_reg <- (lambda1 / 2) * sum(beta_init3^2)
+neg_log_lik + ridge_reg
+
 # Check LRMultiClass:
 # Results using p_k3 (add return statement after obj_val computation in LRMultiClass)
 # (Results match above full objective function)
@@ -344,11 +350,42 @@ p_k <- exp_Xb / sum_exp_Xb
 
 
 
-
 # Additional Testing #
 # Vector
 a <- vector()
 a <- append(a, 1)
+
+
+
+###############################
+# Garbage Collection Analysis #
+###############################
+
+# (Applied using objects from above from various tests)
+library(profvis)
+
+# Training data
+letter_train <- read.table("Data/letter-train.txt", header = F, colClasses = "numeric")
+Y <- letter_train[, 1]
+X <- as.matrix(letter_train[, -1])
+
+# Testing data
+letter_test <- read.table("Data/letter-test.txt", header = F, colClasses = "numeric")
+Yt <- letter_test[, 1]
+Xt <- as.matrix(letter_test[, -1])
+
+# [ToDo] Make sure to add column for an intercept to X and Xt
+X <- cbind(1, X)
+Xt <- cbind(1, Xt)
+
+# Profile:
+#   GC (garbage collection: freeing memory from objects no longer in use)
+profvis(
+  {
+    LRMultiClass(X, Y, Xt, Yt)
+  }
+)
+
 
 
 

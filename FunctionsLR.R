@@ -232,9 +232,14 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
     
     # Compute Objective Value #
     ###########################
-    objective_obj <- 
-      -sum(diag(y_indicator %*% t(log(p_k)))) + # Negative Log Likelihood
-      ((lambda / 2) * sum(colSums(beta^2))) # Ridge Penalty
+    # objective_obj <- 
+    #   -sum(diag(y_indicator %*% t(log(p_k)))) + # Negative Log Likelihood
+    #   ((lambda / 2) * sum(colSums(beta^2))) # Ridge Penalty
+    
+    log_pk <- log(p_k)
+    neg_log_lik <- -sum(y_indicator * log_pk) # Negative Log Likelihood
+    ridge_reg <- (lambda / 2) * sum(beta^2) # Ridge Penalty
+    objective_obj <- neg_log_lik + ridge_reg
     
     objective <- append(objective, objective_obj)
     
